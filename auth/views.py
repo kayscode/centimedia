@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, resolve_url
 from auth.forms import LoginForm, LogoutForm
 from organisations.repositories.user import UserRepository
 
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
@@ -15,14 +16,15 @@ def authentication(request):
         context = {
             "form": login_form
         }
-        return render(request, "", context)
+        return render(request, "auth/login.html", context)
 
     if request.method == "POST":
         login_form = LoginForm(request.POST)
 
         if login_form.is_valid():
             try:
-                user = user_repository.find_by_username(login_form.cleaned_data.get("username"))
+                user_data = login_form.cleaned_data.get("username")
+                user = authenticate(username = user_data.get("username"),password=user_data.get("password"))
                 login(request, user)
                 return redirect(resolve_url("admin-dashboard"))
             except Exception as err:
@@ -37,6 +39,7 @@ def authentication(request):
         return render(request, "",context)
 
 
+@login_required(login_url=resolve_url("login"))
 def sign_out(request):
     logout(request)
     return redirect(resolve_url("login"))
