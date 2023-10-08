@@ -19,9 +19,16 @@ from django.urls import path, include
 
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
 
-urlpatterns = ([
-                  path('auth/',include("auth.urls")),
+def index(request):
+    return HttpResponse("welcome to dubai")
+
+
+urlpatterns = [
+                  path('auth/', include("authentication.urls")),
                   path('admin/', admin.site.urls),
-              ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-               + static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT))
+                path('',index)
+              ]\
+              + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) \
+              + static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

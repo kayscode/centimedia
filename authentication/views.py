@@ -1,5 +1,6 @@
-from django.shortcuts import render, redirect, resolve_url
-from auth.forms import LoginForm, LogoutForm
+from django.shortcuts import render, redirect
+from django.urls import reverse
+from authentication.forms import LoginForm, LogoutForm
 from organisations.repositories.user import UserRepository
 
 from django.contrib.auth import login, logout, authenticate
@@ -26,7 +27,7 @@ def authentication(request):
                 user_data = login_form.cleaned_data.get("username")
                 user = authenticate(username = user_data.get("username"),password=user_data.get("password"))
                 login(request, user)
-                return redirect(resolve_url("admin-dashboard"))
+                return redirect(reverse("admin-dashboard"))
             except Exception as err:
                 # redirect to error page
                 context = {
@@ -39,7 +40,7 @@ def authentication(request):
         return render(request, "",context)
 
 
-@login_required(login_url=resolve_url("login"))
+@login_required()
 def sign_out(request):
     logout(request)
-    return redirect(resolve_url("login"))
+    return redirect(reverse("login"))

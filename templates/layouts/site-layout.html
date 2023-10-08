@@ -5,16 +5,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href={% static 'base.css' %}>
 
+    {% block css_links %}
+    {% endblock css_links %}
 </head>
 <body>
     {% block header %}
+        <div>
+            nav bar
+        </div>
     {% endblock header %}
 
     {% block content %}
     {% endblock content %}
 
     {% block footer%}
+        <div>
+            footer elements
+        </div>
     {% endblock footer %}
 </body>
 </html>

@@ -1,0 +1,12 @@
+{% extends "layouts/site-layout.html" %}
+{% load static %}
+
+{% block css_links %}
+    <link rel="stylesheet" href={% static 'app.css' %}>
+{% endblock css_links %}
+
+{% block content %}
+    <div class="content">
+        authentication form
+    </div>
+{% endblock content %}

@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'organisations',
-    "auth"
+    "authentication"
 ]
 
 MIDDLEWARE = [
@@ -132,3 +132,5 @@ MEDIA_URL = "media/"
 
 # authentication
 AUTH_USER_MODEL = "organisations.User"
+
+LOGIN_URL = "/auth/login"
