@@ -1,7 +1,7 @@
 # from django.db import models
 from django_softdelete.models import models
 from django.contrib.auth.models import AbstractUser, AbstractBaseUser
-
+from organisations.managers.user_manager import UserManager
 
 # Create your models here.
 
@@ -45,6 +45,8 @@ class User(AbstractBaseUser):
             ("super admin", "super admin")
         ]
     )
+
+    objects = UserManager()
 
     USERNAME_FIELD = "username"
 
