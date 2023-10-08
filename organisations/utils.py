@@ -1,5 +1,5 @@
-from ogranisations.repositories import CountryRepository
-from ogranisations.repositories import OrganisationRepository
+from organisations.repositories import CountryRepository
+from organisations.repositories import OrganisationRepository
 
 
 def get_country_list():

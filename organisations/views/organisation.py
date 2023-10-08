@@ -33,7 +33,7 @@ def store_country(request):
     if request.method == "POST":
         organisation_form = CreateOrganisationForm(request.POST)
         if organisation_form.is_valid():
-            organisation = organisation_form.clean()
+            organisation = organisation_form.cleaned_data
             organisation_repository.create(organisation)
             return redirect("")
 
@@ -69,10 +69,10 @@ def update_organisation(request, organisation_id):
         if organisation_form.is_valid():
 
             organisation_data = organisation_form.clean()
-            organisation = organisation_repository.find_one(country_id)
+            organisation = organisation_repository.find_one(organisation_id)
 
             if organisation:
-                organisation_repository.update(country_id, organisation_data)
+                organisation_repository.update(organisation_id, organisation_data)
                 return redirect("")
 
             return render(request, "")
