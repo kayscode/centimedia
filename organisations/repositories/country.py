@@ -3,34 +3,38 @@ from organisations.models import Country
 
 class CountryRepository:
 
-    def __int__(self):
-        self.country_manager = Country.objects
-
-    def create(self, continent: str, name: str):
-        return self.country_manager.create(
+    @classmethod
+    def create(cls, continent: str, name: str):
+        return Country.objects.create(
             continent=continent,
             name=name
         )
 
-    def find_one(self, country_id: int):
-        return self.country_manager.get(id=country_id)
+    @classmethod
+    def find_one(cls, country_id: int):
+        return Country.objects.get(id=country_id)
 
-    def find_by_name(self, name: str):
-        return self.country_manager.get(name=name)
+    @classmethod
+    def find_by_name(cls, name: str):
+        return Country.objects.get(name=name)
 
-    def find_all(self):
-        return self.country_manager.all()
+    @classmethod
+    def find_all(cls):
+        return Country.objects.all()
 
-    def update(self, country_id, country_data):
-        country = self.find_one(country_id)
+    @classmethod
+    def update(cls, country_id, country_data):
+        country = cls.find_one(country_id)
         country.name = country_data["name"]
         country.continent = country_data["continent"]
 
         return country.save()
 
-    def delete(self, country_id):
-        country = self.find_one(country_id)
+    @classmethod
+    def delete(cls, country_id):
+        country = cls.find_one(country_id)
         country.delete()
 
-    def select_id_and_country_name(self):
-        return self.country_manager.all(["id","name"])
+    @classmethod
+    def select_id_and_country_name(cls):
+        return Country.objects.all(["id","name"])
