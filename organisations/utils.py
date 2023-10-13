@@ -3,8 +3,7 @@ from organisations.repositories import OrganisationRepository
 
 
 def get_country_list():
-    country_repository = CountryRepository()
-    countries = country_repository.find_all()
+    countries = CountryRepository.find_all()
     country_choices = []
 
     for country in countries:
@@ -14,8 +13,7 @@ def get_country_list():
 
 
 def generate_organisation_select_form_choices():
-    organisation_repository = OrganisationRepository()
-    organisations_data = organisation_repository.select_id_and_organisations_name()
+    organisations_data = OrganisationRepository.select_id_and_organisations_name()
     organisations_choices = []
 
     for organisation in organisations_data:
