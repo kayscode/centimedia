@@ -8,7 +8,9 @@ class OrganisationRepository:
         return Organisations.objects.create(
             name=organisation_data.get("name"),
             country=organisation_data.get("country_id"),
-            address=organisation_data.get("address")
+            address=organisation_data.get("address"),
+            cover = organisation_data.get("cover"),
+            email= organisation_data.get("email")
         )
 
     @classmethod
@@ -26,13 +28,15 @@ class OrganisationRepository:
     @classmethod
     def delete(cls, organisation_id):
         organisation = cls.find_one(organisation_id)
-        organisation.delete()
+        return organisation.delete()
 
     @classmethod
     def update(cls, organisation_id, organisation_data):
         organisation = cls.find_one(organisation_id)
-        organisation.name = organisation_data.name
-        organisation.country = organisation_data.country
+        organisation.name = organisation_data.get("name")
+        organisation.country = organisation_data.get("country")
+        organisation.cover = organisation_data.get("cover")
+        organisation.email = organisation_data.get("email")
 
         return organisation.save()
 
