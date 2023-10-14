@@ -5,7 +5,6 @@ from organisations.models import Organisations, User
 
 # Create your models here.
 class SourceMediaFile(SoftDeleteModel):
-    id = models.BigAutoField()
     url = models.URLField(blank=False, null=False)
     is_approved = models.BooleanField(default=False)
     source_type = models.CharField(
@@ -20,7 +19,6 @@ class SourceMediaFile(SoftDeleteModel):
 
 
 class MediaFile(SoftDeleteModel):
-    id = models.BigAutoField()
     title = models.CharField(max_length=200, null=False, blank=False)
     file_cover = models.ImageField(null=False, blank=False, upload_to="uploads/media_covers")
     file = models.FileField(null=False, blank=False, upload_to="uploads/media_files")
@@ -38,7 +36,6 @@ class MediaFile(SoftDeleteModel):
 
 
 class Notifications(SoftDeleteModel):
-    id = models.BigAutoField()
     user_id = models.ForeignKey(User, on_delete=models.DO_NOTHING),
     media_id = models.ForeignKey(MediaFile, on_delete=models.DO_NOTHING)
     description = models.TextField(null=False, blank=False)
