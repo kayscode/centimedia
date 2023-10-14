@@ -29,7 +29,7 @@ def create_organisation(request):
         return render(request, "", context)
 
 
-def store_country(request):
+def store_organisation(request):
     if request.method == "POST":
         organisation_form = CreateOrganisationForm(request.POST)
         if organisation_form.is_valid():
@@ -43,7 +43,7 @@ def store_country(request):
         return render(request, "", context)
 
 
-def update_organisation(request, organisation_id):
+def edit_and_update_organisation(request, organisation_id):
     if request.method == "GET":
         organisation = None
         try:

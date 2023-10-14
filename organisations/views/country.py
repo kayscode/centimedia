@@ -30,7 +30,14 @@ def store_country(request):
         pass
 
 
-def update_country(request,country_id):
+def edit_country(request, country_id):
+    pass
 
+
+def update_country(request, country_id):
     if request.method == "PUT":
         pass
+
+
+def delete_country(request, country_id):
+    pass

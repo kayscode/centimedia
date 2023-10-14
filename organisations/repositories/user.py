@@ -6,10 +6,11 @@ class UserRepository:
     @classmethod
     def create(cls, user):
         return User.objects.create(
-            username=user.username,
-            email=user.email,
-            password=user.password,
-            organisation=user.organisation_id
+            username=user.get("username"),
+            email=user.get("email"),
+            password=user.get("password"),
+            organisation=user.get("organisation_id"),
+            account_type= user.get("account_type")
         )
 
     @classmethod
@@ -30,6 +31,9 @@ class UserRepository:
         user.email = user_data.get("email")
         user.password = user_data.get("password")
         user.username = user_data.get("username")
+        user.account_type = user.get("account_type")
+        user.avatar = user.get("avatar"),
+        user.is_active = user.get("is_active")
 
         return user.save()
 

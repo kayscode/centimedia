@@ -8,7 +8,7 @@ from django.shortcuts import resolve_url
 user_repository = UserRepository()
 
 
-@login_required(login_url=resolve_url("login"))
+# @login_required(login_url=resolve_url("login"))
 def user_list(request):
     if request.method == "GET":
         context = {
@@ -18,7 +18,7 @@ def user_list(request):
         return render(request, "", context)
 
 
-@login_required(login_url=resolve_url("login"))
+# @login_required(login_url=resolve_url("login"))
 def show_user(request, user_id):
     if request.method == "GET":
         user = user_repository.find_one(user_id)
@@ -30,8 +30,10 @@ def show_user(request, user_id):
         return render(request, "", user)
 
 
-@login_required(login_url=resolve_url("login"))
+# @login_required(login_url=resolve_url("login"))
 def update_user(request, user_id):
+    if request.method == "GET":
+        pass
     if request.method == "POST":
         user_form = UpdateUserForm(request.POST)
 
@@ -50,7 +52,7 @@ def update_user(request, user_id):
         return render(request, "")
 
 
-@login_required(login_url=resolve_url("login"))
+# @login_required(login_url=resolve_url("login"))
 def create_user(request):
     user_form = CreateUserForm()
     context = {
@@ -59,7 +61,7 @@ def create_user(request):
     return render(request, "", context)
 
 
-@login_required(login_url=resolve_url("login"))
+# @login_required(login_url=resolve_url("login"))
 def store_user(request):
     if request.method == "POST":
 
@@ -72,13 +74,13 @@ def store_user(request):
             return render(request, "")
 
 
-@login_required(login_url=resolve_url("login"))
+# @login_required(login_url=resolve_url("login"))
 def delete_user(request):
     if request.method == "POST":
         user_deletion_form = DeleteUserForm(request.POST)
 
         if user_deletion_form.is_valid():
             user = user_deletion_form.cleaned_data
-            user_repository.delete(user.user_id)
+            user_repository.delete(user.id)
 
             return redirect("")

@@ -4,7 +4,9 @@ from django import forms
 class CreateCountryForm(forms.Form):
     continent = forms.ChoiceField(
         label="continent",
-        widget=forms.Select,
+        widget=forms.Select(
+            attrs={}
+        ),
         choices=[
             ("Af", "Afrique"),
             ("Eu", "Europe"),

@@ -1,6 +1,6 @@
 from django.db import models
 from django_softdelete.models import SoftDeleteModel
-from ogranisations.models import Organisations, User
+from organisations.models import Organisations, User
 
 
 # Create your models here.
