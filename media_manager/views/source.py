@@ -1,116 +1,127 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 
 from media_manager.models import SourceMediaFile
 
-from media_manager.repositories.source_media import SourceMediaRepository
-from media_manager.forms.source import CreateSourceMediaForm, UpdateSourceMediaForm, DeleteSourceMediaForm
+# repositories
+from media_manager.repositories import SourceMediaRepository, MediaFileRepository, NotificationsRepository
+from organisations.repositories import OrganisationRepository
 
-source_media_file_repository = SourceMediaRepository()
-
-
-def get_list_of_sources_media(request):
-    """
-        render all the source media available
-    """
-    if request.method == "GET":
-        source_media_files = source_media_file_repository.find_all()
-        # fetch all sources media
-
-        context = {
-            "sources_media_file": source_media_files
-        }
-
-        return render(request, "", context)
+from media_manager.forms import ManagerCreateSourceMediaForm, ManagerUpdateSourceMediaForm, DeleteSourceMediaForm, \
+    AdminCreateSourceMediaForm, AdminUpdateSourceMediaForm
 
 
-def create_source_media_file(request):
-    """
-        render the create source form and store new source file
-    """
-    if request.method == "GET":
-        # render the interface
-        create_source_media_form = CreateSourceMediaForm()
-        context = {
-            "form": create_source_media_form
-        }
-        return render(request, "", context)
-    elif request.method == "POST":
+def create_and_store_source(request):
+    if request.user is not None and request.user.is_authenticated:
+        if request.method == "GET":
 
-        create_source_media_form = CreateSourceMediaForm(request.POST)
-        if create_source_media_form.is_valid():
-            source_media_file_repository.create(create_source_media_form.cleaned_data)
-            # identify the user type , if it's super admin, create the new source directly
-            # if it's an admin create the new source but send a notification for validation to super admin
-            # for validation purpose
+            if request.user.is_super_admin:
+                source_media_form = AdminCreateSourceMediaForm()
+            else:
+                source_media_form = ManagerCreateSourceMediaForm()
 
-            # show the details about the newly created source media file
-            return redirect("")
-
-        context = {
-            "form": create_source_media_form
-        }
-        return render(request, "", context)
-
-
-def show_source_media(request):
-    pass
-
-
-def edit_and_update_source_media(request, source_media_id):
-    """
-        render source media editing form
-    """
-    source_media = None
-    try:
-        source_media = source_media_file_repository.find_one(source_media_id)
-    except SourceMediaFile.DoesNotExist:
-        # render error page with customize message
-        context = {
-            "error_message": ""
-        }
-        return render(request, "", context)
-
-    if request.method == "GET":
-
-        if source_media is None:
             context = {
-                "error_message": ""
+                "source_media_form": source_media_form
             }
+
             return render(request, "", context)
 
-        source_media_form = UpdateSourceMediaForm(source_media)
+        elif request.method == "POST":
 
-        # fetch source media by ID
-        # fill the edit Source form with the source media data and render it
+            if request.user.is_super_admin:
+                source_media_form = AdminCreateSourceMediaForm(request.POST)
+            else:
+                source_media_form = ManagerCreateSourceMediaForm(request.POST)
 
-        context = {
-            "form": source_media_form
-        }
+            if source_media_form.is_valid():
+                if request.user.is_super_admin is False:
+                    source_media_form.cleaned_data["organisation"] = request.user.organisation
+                SourceMediaRepository.create(source_media_form.cleaned_data)
+                return redirect(reverse("list_source"))
+            else:
+                context = {
+                    "source_media": source_media_form
+                }
 
-        return render(request, "", context)
-
-    elif request.method == "POST":
-        source_media_form = UpdateSourceMediaForm(request.POST)
-
-        if source_media_form.is_valid():
-            source_media_file_repository.update(source_media_form.cleaned_data.get("id"),
-                                                source_media_form.cleaned_data)
-
-        context = {
-            "form": source_media_form
-        }
-        return render(request, "", context)
+                return render(request, "", context)
+    else:
+        return redirect(reverse("auth_login"))
 
 
-def get_filtered_source_media(request):
-    """
-        get filtered option and fetch all data that match the filter criteria
-    """
+def show_source(request, source_id):
+    if request.user is not None and request.user.is_authenticated:
+        if request.method == "GET":
+            try:
+                source = SourceMediaRepository.find_one(source_id)
 
+                context = {
+                    "source": source
+                }
+                return render(request, "", context)
+            except SourceMediaFile.DoesNotExist:
+
+                return redirect("model_not_found_error")
+    else:
+        return redirect(reverse("auth_login"))
+
+
+def edit_and_update_source(request, source_id):
+    if request.user is not None and request.user.is_authenticated:
+        if request.method == "GET":
+            try:
+                source_media = SourceMediaRepository.find_one(source_id)
+            except SourceMediaFile.DoesNotExist:
+                return redirect("model_not_found_error")
+
+            if request.user.is_super_admin:
+                source_media_form = AdminUpdateSourceMediaForm(source_media.to_json)
+            else:
+                source_media_form = ManagerUpdateSourceMediaForm(source_media.to_json)
+
+            context = {
+                "source_media": source_media_form
+            }
+
+            return render(request, "", context)
+
+        elif request.method == "POST":
+
+            if request.user.is_super_admin:
+                source_media_form = AdminUpdateSourceMediaForm(request.POST)
+            else:
+                source_media_form = ManagerUpdateSourceMediaForm(request.POST)
+
+            if source_media_form.is_valid():
+                source_media_id = source_media_form.cleaned_data.get("id")
+                SourceMediaRepository.update(source_media_id, source_media_form.cleaned_data)
+                return redirect(reverse("list_source"))
+            else:
+
+                context = {
+                    "source_media": source_media_form
+                }
+
+                return render(request, "", context)
+    else:
+        return redirect(reverse("auth_login"))
+
+
+def list_source(request):
     if request.method == "GET":
-        # fetch source media by applying filter option
 
-        context = {
-
-        }
-        return render(request, "", context)
+        if request.user is not None and request.user.is_authenticated:
+            if request.user.is_super_admin is False:
+                authenticated_user = request.user
+                organisation = authenticated_user.organisation
+                source_media_links = SourceMediaRepository.find_by_organisation_id(organisation_id=organisation.id)
+                context = {
+                    "source_media": source_media_links
+                }
+                return render(request, "", context)
+            else:
+                source_media_links = SourceMediaRepository.find_all()
+                context = {
+                    "source_media": source_media_links
+                }
+                return render(request, "", context)
+        else:
+            return redirect(reverse("auth_login"))

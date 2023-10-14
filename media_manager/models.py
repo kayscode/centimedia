@@ -17,6 +17,15 @@ class SourceMediaFile(SoftDeleteModel):
     )
     organisation = models.ForeignKey(Organisations, on_delete=models.CASCADE, null=True, blank=True)
 
+    @property
+    def to_json(self):
+        return {
+            "organisation":self.organisation,
+            "source_type":self.source_type,
+            "url" : self.url,
+            "is_approved" : self.is_approved
+        }
+
 
 class MediaFile(SoftDeleteModel):
     title = models.CharField(max_length=200, null=False, blank=False)

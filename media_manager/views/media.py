@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from media_manager.forms.media import CreateMediaFileForm, UpdateMediaFileForm, DeleteMediaFileForm
+from media_manager.forms import ManagerCreateMediaFileForm, AdminCreateMediaFileForm, \
+    ManagerUpdateMediaFileForm, AdminUpdateMediaFileForm, DeleteMediaFileForm
 from media_manager.repositories.media_file import MediaFileRepository
 from media_manager.repositories.source_media import SourceMediaRepository
 
@@ -29,10 +30,10 @@ def get_media_file_list(request):
         "uploaded_media_file": uploaded_media_file
     }
 
-    return render(request,"",context)
+    return render(request, "", context)
 
 
-def delete_media_file(request,media_file_id):
+def delete_media_file(request, media_file_id):
     pass
 
 
@@ -41,3 +42,19 @@ def edit_and_update_media_file(request):
         pass
     elif request.method == "POST":
         pass
+
+
+def create_and_store(request):
+    pass
+
+
+def edit_and_update(request):
+    pass
+
+
+def show(request):
+    pass
+
+
+def list_media(request, media_type):
+    pass

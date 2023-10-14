@@ -50,6 +50,7 @@ class User(AbstractBaseUser):
 
     USERNAME_FIELD = "username"
 
+    @property
     def is_super_admin(self):
         if self.account_type == "admin":
             return False
