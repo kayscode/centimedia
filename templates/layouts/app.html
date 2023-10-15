@@ -1,10 +1,38 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {% block css_links %}
+        <link rel="stylesheet" href={% static "css/app.css" %}>
+    {% endblock css_links %}
+
+    <title>
+        {% block title %}
+        {% endblock title %}
+    </title>
 </head>
 <body>
+    <div class="h-screen grid grid-cols-12 bg-blue-50 text-gray-600">
+        <div class="col-span-3">
+            <div class="py-3  text-center text-2xl font-bold"> Centimedia</div>
+            <div class=" flex-1 space-y-3 px-10 py-4">
+                <a href="" class="block p-2   rounded-lg hover:bg-blue-200 font-semibold "> main </a>
+                <a href="" class="block p-2  hover:bg-blue-200  font-semibold rounded-lg "> fichier media </a>
+                <a href="" class="block p-2   hover:bg-blue-200   font-semibold rounded-lg"> source media</a>
+                <a href="" class="block p-2   hover:bg-blue-200  font-semibold rounded-lg "> branches </a>
+                <a href="" class="block p-2   hover:bg-blue-200   font-semibold rounded-lg "> utilisateurs</a>
+                <a href="" class="block p-2   hover:bg-blue-200   font-semibold rounded-lg "> notifications</a>
 
+            </div>
+        </div>
+        <div class="col-span-9 h-full ">
+            {% block main %}
+
+            {% endblock main %}
+        </div>
+    </div>
 </body>
 </html>

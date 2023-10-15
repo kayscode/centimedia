@@ -17,6 +17,6 @@ def generate_organisation_select_form_choices():
     organisations_choices = []
 
     for organisation in organisations_data:
-        organisations_choices.append((organisation.id, organisation.name))
+        organisations_choices.append((organisation.get("id"), organisation.get("name")))
 
     return organisations_choices

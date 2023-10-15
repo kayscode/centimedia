@@ -31,7 +31,7 @@ def authentication(request):
                     raise User.DoesNotExist
 
                 login(request, user)
-                return redirect(reverse("admin-dashboard"))
+                return redirect(reverse("dashboard"))
             except User.DoesNotExist as err:
                 # redirect to error page
 
@@ -43,7 +43,7 @@ def authentication(request):
         context = {
             "form": login_form
         }
-        return render(request, "",context)
+        return render(request, "auth/login.html",context)
 
 
 @login_required()

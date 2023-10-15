@@ -16,19 +16,23 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import render
 
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
 
-def index(request):
-    return HttpResponse("welcome to dubai")
+
+def main_dashboard(request):
+    return render(request,"pages/dashboard.html")
 
 
 urlpatterns = [
                   path('auth/', include("authentication.urls")),
+                  path("centimedia/", include("media_manager.urls")),
+                  path('centimedia/', include("organisations.urls")),
                   path('admin/', admin.site.urls),
-                path('',index)
-              ]\
+                  path('centimedia', main_dashboard, name="dashboard")
+              ] \
               + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) \
-              + static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
+              + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -42,4 +42,4 @@ class OrganisationRepository:
 
     @classmethod
     def select_id_and_organisations_name(cls):
-        return Organisations.objects.all(["id", "name"])
+        return Organisations.objects.values("id", "name")

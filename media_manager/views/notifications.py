@@ -1,53 +1,150 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
+
+from media_manager.repositories import NotificationsRepository, SourceMediaNotificationsRepository
+from media_manager.forms import RejectAndApprovalNotificationForm
 
 
-def get_list_confirmation_demands(request):
-    """
-        list all no treat confirmation demands by descending order
-    """
+def notifications_main(request):
+    return render(request, "")
 
-    if request.method == "GET":
-        # retrieve all no treated confirmation demands
-        context = {
 
-        }
+def list_notifications(request, notification_type):
+    if request.user is not None and request.user.is_authenticated:
+        if request.method == "GET":
+
+            notifications_and_form = []
+
+            if notification_type == "source":
+                notifications = SourceMediaNotificationsRepository.find_all()
+                for notification in notifications:
+                    notifications_and_form.append(
+                        {
+                            "notification": notification,
+                            "form": RejectAndApprovalNotificationForm({
+                                "id": notification.id,
+                                "media_id": notification.source.id})
+                        }
+                    )
+
+            elif notification_type == "media":
+                notifications = NotificationsRepository.find_all()
+                for notification in notifications:
+                    notifications_and_form.append(
+                        {
+                            "notification": notification,
+                            "form": RejectAndApprovalNotificationForm({
+                                "id": notification.id,
+                                "media_id": notification.media.id})
+                        }
+                    )
+            context = {
+                "notifications_with_forms": notifications_and_form
+            }
+
+            return render(request, "", context)
+    else:
+        return redirect(reverse("auth_login"))
+
+
+def show_notification(request, notification_type, notification_id):
+    if request.user is not None and request.user.is_authenticated:
+        context = None
+        if notification_type == "source":
+            notification = SourceMediaNotificationsRepository.find_one(notification_id)
+            context = {
+                "notification": notification,
+                "source": notification.source,
+                "media": None,
+                "form": RejectAndApprovalNotificationForm({
+                    "id": notification.id,
+                    "media_id": notification.source.id
+                })
+            }
+        elif notification_type == "media":
+            notification = NotificationsRepository.find_one(notification_id)
+
+            context = {
+                "notification": notification,
+                "source": None,
+                "media": notification.media,
+                "form": RejectAndApprovalNotificationForm({
+                    "id": notification.id,
+                    "media_id": notification.media.id
+                })
+            }
+
         return render(request, "", context)
+    else:
+        return redirect(reverse("auth_login"))
 
 
-def show_confirmation_demand(request):
-    """
-        see confirmation demand in details
-    """
+def reject_notification(request, notification_type, notification_id):
+    if request.user is not None and request.user.is_authenticated:
+        if request.method == "POST":
 
-    if request.method == "GET":
-        # fetch confirmation demand
-        context = {
+            notification_form = RejectAndApprovalNotificationForm(request.POST)
+            context = None
 
-        }
-        return render(request, "", context)
+            if notification_form.is_valid():
+
+                redirect_url = ""
+                if notification_type == "source":
+                    SourceMediaNotificationsRepository.reject_notification(
+                        notification_id=notification_form.cleaned_data.get("id")
+                    )
+                    redirect_url = reverse("list_notification", kwargs={"notification_type": "source"})
+
+                elif notification_type == "media":
+                    NotificationsRepository.reject_notification(
+                        notification_id=notification_form.cleaned_data.get("id")
+                    )
+                    redirect_url = reverse("list_notification", kwargs={"notification_type": "media"})
+
+                return redirect(redirect_url)
+
+            return redirect(reverse(
+                "show_notification",
+                kwargs={"notification_type": notification_type, "notification_id": notification_id}
+            ))
+        else:
+            return redirect(reverse("list_notification"))
+    else:
+        return redirect(reverse("auth_login"))
 
 
-def reject_confirmation_demand(request):
-    """
-        mark a confirmation demands as rejected
-    """
+def accept_notification(request, notification_type, notification_id):
+    if request.user is not None and request.user.is_authenticated:
+        if request.method == "POST":
 
-    if request.method == "POST":
-        # fetch confirmation demand by id
+            notification_form = RejectAndApprovalNotificationForm(request.POST)
+            context = None
 
-        # update the status of the confirmation demands as rejected
+            if notification_form.is_valid():
 
-        return redirect("")  # redirect to the notifications demands list
+                redirect_url = ""
+                if notification_type == "source":
+                    SourceMediaNotificationsRepository.approve_notification(
+                        notification_id=notification_form.cleaned_data.get("id")
+                    )
+                    redirect_url = reverse("list_notification", kwargs={"notification_type": "source"})
+
+                elif notification_type == "media":
+                    NotificationsRepository.approve_notification(
+                        notification_id=notification_form.cleaned_data.get("id")
+                    )
+                    redirect_url = reverse("list_notification", kwargs={"notification_type": "media"})
+
+                return redirect(redirect_url)
+
+            return redirect(reverse(
+                "show_notification",
+                kwargs={"notification_type": notification_type, "notification_id": notification_id}
+            ))
+        else:
+            return redirect(reverse("list_notification"))
+    else:
+        return redirect(reverse("auth_login"))
 
 
-def accept_confirmation_demand(request):
-    """
-            mark a confirmation demands as rejected
-        """
-
-    if request.method == "POST":
-        # fetch confirmation demand by id
-
-        # update the status of the confirmation demands as accepted
-
-        return redirect("")  # redirect to be notifications demands list
+def delete_notification(request, notification_type, notification_id):
+    pass

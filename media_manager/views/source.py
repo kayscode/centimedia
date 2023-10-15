@@ -3,11 +3,10 @@ from django.shortcuts import render, redirect, reverse
 from media_manager.models import SourceMediaFile
 
 # repositories
-from media_manager.repositories import SourceMediaRepository, MediaFileRepository, NotificationsRepository
-from organisations.repositories import OrganisationRepository
+from media_manager.repositories import SourceMediaRepository, SourceMediaNotificationsRepository
 
-from media_manager.forms import ManagerCreateSourceMediaForm, ManagerUpdateSourceMediaForm, DeleteSourceMediaForm, \
-    AdminCreateSourceMediaForm, AdminUpdateSourceMediaForm
+from media_manager.forms import ManagerCreateSourceMediaForm, ManagerUpdateSourceMediaForm, \
+    DeleteSourceMediaForm, AdminCreateSourceMediaForm, AdminUpdateSourceMediaForm
 
 
 def create_and_store_source(request):
@@ -33,9 +32,16 @@ def create_and_store_source(request):
                 source_media_form = ManagerCreateSourceMediaForm(request.POST)
 
             if source_media_form.is_valid():
-                if request.user.is_super_admin is False:
+                if request.user.is_super_admin is True:
+                    source_media = SourceMediaRepository.create(source_media_form.cleaned_data)
+                else:
                     source_media_form.cleaned_data["organisation"] = request.user.organisation
-                SourceMediaRepository.create(source_media_form.cleaned_data)
+                    source_media = SourceMediaRepository.create(source_media_form.cleaned_data)
+                    SourceMediaNotificationsRepository.create({
+                        "user_id": request.user.id,
+                        "source_id": source_media.id,
+                        "description": f"{request.user} demande d'ajouter une source media "
+                    })
                 return redirect(reverse("list_source"))
             else:
                 context = {
@@ -91,8 +97,17 @@ def edit_and_update_source(request, source_id):
                 source_media_form = ManagerUpdateSourceMediaForm(request.POST)
 
             if source_media_form.is_valid():
+
                 source_media_id = source_media_form.cleaned_data.get("id")
+                source_media = SourceMediaRepository.find_one(source_media_id)
                 SourceMediaRepository.update(source_media_id, source_media_form.cleaned_data)
+
+                if request.user.is_super_admin is False:
+                    SourceMediaNotificationsRepository.create({
+                        "user_id": request.user.id,
+                        "source_id": source_media.id,
+                        "description": f"{request.user} demande veut modifier une source media "
+                    })
                 return redirect(reverse("list_source"))
             else:
 
@@ -125,3 +140,29 @@ def list_source(request):
                 return render(request, "", context)
         else:
             return redirect(reverse("auth_login"))
+
+
+def delete_source(request, source_id):
+    if request.user is not None and request.user.is_authenticated:
+        if request.method == "POST":
+            source_deletion_form = DeleteSourceMediaForm(request.POST)
+
+            if source_deletion_form.is_valid():
+                SourceMediaRepository.delete(source_deletion_form.cleaned_data.get("id"))
+
+                if request.user.is_super_admin is False:
+                    source_media = SourceMediaRepository.find_one(source_id)
+                    SourceMediaNotificationsRepository.create({
+                        "user_id": request.user.id,
+                        "source_id": source_media.id,
+                        "description": f"{request.user} fait une demande de suppresion d'une source media "
+                    })
+
+                return redirect(reverse("list_source"))
+            else:
+                context = {
+                    "form": source_deletion_form
+                }
+                return render(request, "", context)
+    else:
+        return redirect(reverse("auth_login"))

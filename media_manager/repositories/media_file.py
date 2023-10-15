@@ -3,53 +3,60 @@ from media_manager.models import MediaFile
 
 class MediaFileRepository:
 
-    def __int__(self):
-        self.media_file_manager = MediaFile.objects
+    @classmethod
+    def find_all(cls):
+        return MediaFile.objects.all()
 
-    def find_all(self):
-        return self.media_file_manager.all()
+    @classmethod
+    def find_one(cls, media_id):
+        media = MediaFile.objects.get(id=media_id)
 
-    def find_one(self, media_id):
-        media = self.media_file_manager.get(id=media_id)
         if media is None:
-            raise
+            raise MediaFile.DoesNotExist
+
         return media
 
-    def create(self, media_data):
-        return self.media_file_manager.create(
+    @classmethod
+    def create(cls, media_data):
+        return MediaFile.objects.create(
             title=media_data.get("title"),
             file_cover=media_data.get("file_cover"),
             file_path=media_data.get("file_path"),
             organisation=media_data.get("organisation"),
-            uploaded_date=media_data.get("uploaded_date"),
-            is_approved=media_data.get("is_approved"),
             media_type=media_data.get("media_type")
         )
 
-    def update(self, media_id, media_data):
-        media = self.find_one(media_id)
+    @classmethod
+    def update(cls, media_id, media_data):
+        media = cls.find_one(media_id)
 
         media.title = media_data.get("title")
         media.file_cover = media_data.get("file_cover")
         media.file_path = media_data.get("file_path")
         media.organisation = media_data.get("organisation")
-        media.uploaded_date = media_data.get("uploaded_date")
-        media.is_approved = media_data.get("is_approved")
+        media.status = media_data.get("status")
         media.media_type = media_data.get("media_type")
 
         return media.save()
 
-    def approve_uploaded_file(self, media_id):
-        media = self.find_one(media_id)
-        media.is_approved = True
+    @classmethod
+    def approve_uploaded_file(cls, media_id):
+        media = cls.find_one(media_id)
+        media.source_type= "accepter"
         return media.save()
 
-    def reject_uploaded_file(self, media_id):
-        media = self.find_one(media_id)
-        media.is_approved = False
+    @classmethod
+    def reject_uploaded_file(cls, media_id):
+        media = cls.find_one(media_id)
+        media.source_type = "accepter"
         return media.save()
 
-    def delete(self, media_id):
-        media = self.find_one(media_id)
-        if media:
+    @classmethod
+    def delete(cls, media_id):
+        media = cls.find_one(media_id)
+        if media is not None:
             return media.delete()
+
+    @classmethod
+    def find_by_organisation_id(cls, organisation_id):
+        return cls.find_all().filter(organisation = organisation_id)

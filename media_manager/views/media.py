@@ -1,60 +1,169 @@
-from django.shortcuts import render
-from media_manager.forms import ManagerCreateMediaFileForm, AdminCreateMediaFileForm, \
-    ManagerUpdateMediaFileForm, AdminUpdateMediaFileForm, DeleteMediaFileForm
-from media_manager.repositories.media_file import MediaFileRepository
-from media_manager.repositories.source_media import SourceMediaRepository
+from django.shortcuts import render, redirect, reverse
 
-from media_manager.service.webscraping import SourceMediaFileWebScrapper
-from media_manager.service.apis.media import SourceMediaFileService
+from media_manager.models import MediaFile
 
-media_file_repository = MediaFileRepository()
-source_media_repository = SourceMediaRepository()
+# repositories
+from media_manager.repositories import MediaFileRepository, NotificationsRepository
 
-
-def get_media_file_list(request):
-    """
-        get list of all media file
-    """
-
-    api_resources_links = source_media_repository.find_by_media_type("api")
-    web_scrapped_links = source_media_repository.find_by_media_type("web-scrapping")
-
-    web_scrapped_media_file = SourceMediaFileWebScrapper.get_media_files(web_scrapped_links)
-    api_media_file = SourceMediaFileService.get_media_files(api_resources_links)
-
-    uploaded_media_file = media_file_repository.find_all()
-
-    context = {
-        "web_scrapped_media_file": web_scrapped_media_file,
-        "api_media_file": api_media_file,
-        "uploaded_media_file": uploaded_media_file
-    }
-
-    return render(request, "", context)
+# forms
+from media_manager.forms import ManagerCreateMediaFileForm, ManagerUpdateMediaFileForm, DeleteMediaFileForm, \
+    AdminCreateMediaFileForm, AdminUpdateMediaFileForm
 
 
-def delete_media_file(request, media_file_id):
-    pass
+def create_and_store_media(request):
+    if request.user is not None and request.user.is_authenticated:
+        if request.method == "GET":
+
+            if request.user.is_super_admin:
+                media_form = AdminCreateMediaFileForm()
+            else:
+                media_form = ManagerCreateMediaFileForm()
+
+            context = {
+                "media_form": media_form
+            }
+
+            return render(request, "", context)
+
+        elif request.method == "POST":
+
+            if request.user.is_super_admin is True:
+                media_form = AdminCreateMediaFileForm(request.POST)
+            else:
+                media_form = ManagerCreateMediaFileForm(request.POST)
+
+            if media_form.is_valid():
+                if request.user.is_super_admin is True:
+                    MediaFileRepository.create(media_form.cleaned_data)
+                else:
+                    media_form.cleaned_data["organisation"] = request.user.organisation
+                    source_media = MediaFileRepository.create(media_form.cleaned_data)
+                    NotificationsRepository.create({
+                        "user_id": request.user.id,
+                        "media_id": source_media.id,
+                        "description": f"{request.user} fait une demande d'ajouter un fichier media "
+                    })
+                return redirect(reverse("list_media"))
+            else:
+                context = {
+                    "source_media": media_form
+                }
+
+                return render(request, "", context)
+    else:
+        return redirect(reverse("auth_login"))
 
 
-def edit_and_update_media_file(request):
+def show_media(request, media_id):
+    if request.user is not None and request.user.is_authenticated:
+        if request.method == "GET":
+            try:
+                media = MediaFileRepository.find_one(media_id)
+
+                context = {
+                    "source": media,
+                    "deletion_form" : DeleteMediaFileForm(media.to_json)
+                }
+                return render(request, "", context)
+            except MediaFile.DoesNotExist:
+
+                return redirect("model_not_found_error")
+    else:
+        return redirect(reverse("auth_login"))
+
+
+def edit_and_update_media(request, media_id):
+    if request.user is not None and request.user.is_authenticated:
+        if request.method == "GET":
+            try:
+                media = MediaFileRepository.find_one(media_id)
+            except MediaFile.DoesNotExist:
+                return redirect("model_not_found_error")
+
+            if request.user.is_super_admin is True:
+                media_form = AdminUpdateMediaFileForm(media.to_json)
+            else:
+                media_form = ManagerUpdateMediaFileForm(media.to_json)
+
+            context = {
+                "media_form": media_form
+            }
+
+            return render(request, "", context)
+
+        elif request.method == "POST":
+
+            if request.user.is_super_admin is True:
+                media_form = AdminUpdateMediaFileForm(request.POST)
+            else:
+                media_form = ManagerUpdateMediaFileForm(request.POST)
+
+            if media_form.is_valid():
+                media_id = media_form.cleaned_data.get("id")
+                media = MediaFileRepository.find_one(media_id)
+                MediaFileRepository.update(media_id, media_form.cleaned_data)
+
+                if request.user.is_super_admin is False:
+                    NotificationsRepository.create({
+                        "user_id": request.user.id,
+                        "source_id": media.id,
+                        "description": f"{request.user} fait une demande pour modifier un fichier media "
+                    })
+                return redirect(reverse("list_media"))
+            else:
+
+                context = {
+                    "media_form": media_form
+                }
+
+                return render(request, "", context)
+    else:
+        return redirect(reverse("auth_login"))
+
+
+def list_media(request):
     if request.method == "GET":
-        pass
-    elif request.method == "POST":
-        pass
+
+        if request.user is not None and request.user.is_authenticated:
+            if request.user.is_super_admin is False:
+                authenticated_user = request.user
+                organisation = authenticated_user.organisation
+                medias= MediaFileRepository.find_by_organisation_id(organisation_id=organisation.id)
+                context = {
+                    "medias": medias
+                }
+                return render(request, "", context)
+            else:
+                medias = MediaFileRepository.find_all()
+                context = {
+                    "medias": medias
+                }
+                return render(request, "", context)
+        else:
+            return redirect(reverse("auth_login"))
 
 
-def create_and_store(request):
-    pass
+def delete_media(request,media_id):
+    if request.user is not None and request.user.is_authenticated:
+        if request.method == "POST":
+            media_form = DeleteMediaFileForm(request.POST)
 
+            if media_form.is_valid():
+                MediaFileRepository.delete(media_form.cleaned_data.get("id"))
 
-def edit_and_update(request):
-    pass
+                if request.user.is_super_admin is False:
+                    media = MediaFileRepository.find_one(media_id)
+                    NotificationsRepository.create({
+                        "user_id": request.user.id,
+                        "media_id": media.id,
+                        "description": f"{request.user} fait une demande de suppresion d'une source media "
+                    })
 
-
-def show(request):
-    pass
-
-
-def list_media(request, media_type):
-    pass
+                return redirect(reverse("list_source"))
+            else:
+                context = {
+                    "form": media_form
+                }
+                return render(request, "", context)
+    else:
+        return redirect(reverse("auth_login"))
