@@ -3,6 +3,7 @@ from django_softdelete.models import models
 from django.contrib.auth.models import AbstractUser, AbstractBaseUser
 from organisations.managers.user_manager import UserManager
 
+
 # Create your models here.
 
 class Country(models.Model):
@@ -56,3 +57,16 @@ class User(AbstractBaseUser):
             return False
         elif self.account_type == "super admin":
             return True
+
+    @property
+    def to_json(self):
+        return {
+            "username": self.username,
+            "id": self.id,
+            "email": self.email,
+            "password": self.password,
+            "avatar": self.avatar,
+            "organisation":self.organisation.id,
+            "is_active" : self.is_active,
+            "account_type":self.account_type
+        }

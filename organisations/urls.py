@@ -40,8 +40,8 @@ user_pattern = [
     # user list
     path('', user_view.user_list, name="user_list"),
     # create user
-    path('create/', user_view.create_user, name="create_user"),
-    # store new user
+    #path('create/', user_view.create_user, name="create_user"),
+    #  crearte is merge to store new user
     path('store/', user_view.store_user, name="store_user"),
     # show user
     path('<int:user_id>/', user_view.show_user, name="show_user"),

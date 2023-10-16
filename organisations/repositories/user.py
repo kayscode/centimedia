@@ -25,8 +25,25 @@ class UserRepository:
     def find_all(cls):
         return User.objects.all()
 
+    # @classmethod
+    # def update(cls, user_id, user_data):
+    #     user = cls.find_one(user_id)
+    #     user.email = user_data.get("email")
+    #     user.password = user_data.get("password")
+    #     user.username = user_data.get("username")
+    #     user.account_type = user.get("account_type")
+    #     user.avatar = user.get("avatar"),
+    #     user.is_active = user.get("is_active")
+    #
+    #     return user.save()
+
     @classmethod
-    def update(cls, user_id, user_data):
+    def delete(cls, user_id):
+        user = cls.find_one(user_id)
+        user.delete()
+
+    @classmethod
+    def update_as_admin(cls, user_id, user_data):
         user = cls.find_one(user_id)
         user.email = user_data.get("email")
         user.password = user_data.get("password")
@@ -38,6 +55,8 @@ class UserRepository:
         return user.save()
 
     @classmethod
-    def delete(cls, user_id):
+    def update_as_manager(cls, user_id, user_data):
         user = cls.find_one(user_id)
-        user.delete()
+        user.password = user_data.get("password")
+        user.avatar = user.get("avatar")
+        return user.save()

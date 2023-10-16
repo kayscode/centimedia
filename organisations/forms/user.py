@@ -3,13 +3,6 @@ from organisations.utils import generate_organisation_select_form_choices
 
 
 class CreateUserForm(forms.Form):
-    username = forms.CharField(
-        widget=forms.TextInput(
-            attrs={
-
-            }
-        )
-    )
     avatar = forms.ImageField(
         widget=forms.FileInput(
             attrs={
@@ -18,16 +11,26 @@ class CreateUserForm(forms.Form):
         )
     )
 
-    email = forms.EmailField(
-        widget=forms.EmailInput(
+    password = forms.CharField(
+        widget=forms.PasswordInput(
             attrs={
 
             }
         )
     )
 
-    password = forms.CharField(
-        widget=forms.PasswordInput(
+
+class AdminCreateUserForm(CreateUserForm):
+    username = forms.CharField(
+        widget=forms.TextInput(
+            attrs={
+
+            }
+        )
+    )
+
+    email = forms.EmailField(
+        widget=forms.EmailInput(
             attrs={
 
             }
@@ -69,8 +72,8 @@ class DeleteUserForm(forms.Form):
 
 
 class UpdateUserForm(CreateUserForm, DeleteUserForm):
-    is_active = forms.BooleanField(widget=forms.HiddenInput)
+    pass
 
 
-class AdminUpdateUserForm(CreateUserForm, DeleteUserForm):
+class AdminUpdateUserForm(DeleteUserForm, AdminCreateUserForm):
     pass
