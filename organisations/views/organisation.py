@@ -1,79 +1,89 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from organisations.forms import CreateOrganisationForm, DeleteOrganisationForm, UpdateOrganisationForm
 from organisations.repositories.organisation import OrganisationRepository
 
-organisation_repository = OrganisationRepository()
+from organisations.models import Organisations
 
 
 def organisation_list(request):
-    context = {
-        "organisations": organisation_repository.find_all()
-    }
-    return render(request, "", context)
+    if request.user is not None and request.user.is_authenticated:
+        context = {
+            "organisations": OrganisationRepository.find_all()
+        }
+        return render(request, "organisations/branches/list_branches.html", context)
+    else:
+        return redirect(reverse("auth_login"))
 
 
 def show_organisation(request, organisation_id):
-    context = {
-        "organisation": organisation_repository.find_one(organisation_id)
-    }
+    if request.user is not None and request.user.is_authenticated:
 
-    return render(request, "", context)
+        try:
+            context = {
+                "organisation": OrganisationRepository.find_one(organisation_id)
+            }
+            return render(request, "organisations/branches/detail_branche.html", context)
+
+        except Organisations.DoesNotExist:
+            return redirect(reverse("error_404"))
+    else:
+        return redirect(reverse("auth_login"))
 
 
 def create_organisation(request):
-    if request.method == "GET":
-        organisation_form = CreateOrganisationForm()
-        context = {
-            "organisation_form": organisation_form
-        }
-        return render(request, "", context)
+    if request.user is not None and request.user.is_authenticated :
+        if request.method == "GET":
+            organisation_form = CreateOrganisationForm()
+            context = {
+                "organisation_form": organisation_form
+            }
+            return render(request, "organisations/branches/create_branche.html", context)
 
+        if request.method == "POST":
+            organisation_form = CreateOrganisationForm(request.POST)
+            if organisation_form.is_valid():
+                organisation = organisation_form.cleaned_data
+                OrganisationRepository.create(organisation)
+                return redirect("")
 
-def store_organisation(request):
-    if request.method == "POST":
-        organisation_form = CreateOrganisationForm(request.POST)
-        if organisation_form.is_valid():
-            organisation = organisation_form.cleaned_data
-            organisation_repository.create(organisation)
-            return redirect("")
-
-        context = {
-            "organisation_form": organisation_form
-        }
-        return render(request, "", context)
+            context = {
+                "organisation_form": organisation_form
+            }
+            return render(request, "organisations/branches/create_branche.html", context)
 
 
 def edit_and_update_organisation(request, organisation_id):
     if request.method == "GET":
-        organisation = None
         try:
-            organisation = organisation_repository.find_one(organisation_id)
+            organisation = OrganisationRepository.find_one(organisation_id)
 
             if organisation is None:
-                raise Exception("error occurred impossible to find an organisation  with that id")
-            form = UpdateOrganisationForm(organisation.to_form())
+                raise Organisations.DoesNotExist
+
+            organisation_form = UpdateOrganisationForm(organisation.to_json)
 
             context = {
-                "form": form
+                "form": organisation_form
             }
-            return render(request, "", context)
-        except:
+            return render(request, "organisations/branches/edit_branche.html", context)
+
+        except Organisations.DoesNotExist:
             context = {
                 "error": "organisation doesn't exist"
             }
-            return render(request, "", context)
+            return redirect(reverse("error_404"))
 
     elif request.method == "POST":
         organisation_form = UpdateOrganisationForm(request.POST)
 
         if organisation_form.is_valid():
 
-            organisation_data = organisation_form.clean()
-            organisation = organisation_repository.find_one(organisation_id)
+            organisation_data = organisation_form.cleaned_data
+            organisation = OrganisationRepository.find_one(organisation_id)
 
-            if organisation:
-                organisation_repository.update(organisation_id, organisation_data)
-                return redirect("")
+            if organisation is not None:
+                OrganisationRepository.update(organisation_id, organisation_data)
+                return redirect(reverse("show_organisation",kwargs={"organisation_id":organisation_id}))
 
             return render(request, "")
 
@@ -81,7 +91,7 @@ def edit_and_update_organisation(request, organisation_id):
             "organisation_form": organisation_form
         }
 
-        return render(request, "", context)
+        return render(request, "organisations/branches/edit_branche.html", context)
 
 
 def delete_organisation(request):
@@ -89,8 +99,8 @@ def delete_organisation(request):
         form = DeleteOrganisationForm(request.POST)
 
         if form.is_valid():
-            # delete and redirect to list
-            pass
+            OrganisationRepository.delete(form.cleaned_data.get("id"))
+            return redirect(reverse("organisation_list"))
         context = {
             "form": form
         }

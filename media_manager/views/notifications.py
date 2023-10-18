@@ -41,7 +41,7 @@ def list_notifications(request, notification_type):
                 "notifications_with_forms": notifications_and_form
             }
 
-            return render(request, "", context)
+            return render(request, "media_manager/notifications/notifications_list.html", context)
     else:
         return redirect(reverse("auth_login"))
 
@@ -73,7 +73,7 @@ def show_notification(request, notification_type, notification_id):
                 })
             }
 
-        return render(request, "", context)
+        return render(request, "media_manager/notifications/notifications_details.html", context)
     else:
         return redirect(reverse("auth_login"))
 

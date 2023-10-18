@@ -1,10 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "layouts/app.html" %}
 
-</body>
-</html>
+{% block title %}
+    media
+{% endblock title %}
+
+{% block main %}
+    {% include "media_manager/media/navigation.html" with ui_name="modifier un fichier media" %}
+
+    <div>
+        edit media
+    </div>
+{% endblock %}

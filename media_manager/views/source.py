@@ -22,7 +22,7 @@ def create_and_store_source(request):
                 "source_media_form": source_media_form
             }
 
-            return render(request, "", context)
+            return render(request, "media_manager/source/source_media_file_create.html", context)
 
         elif request.method == "POST":
 
@@ -42,13 +42,13 @@ def create_and_store_source(request):
                         "source_id": source_media.id,
                         "description": f"{request.user} demande d'ajouter une source media "
                     })
-                return redirect(reverse("list_source"))
+                return redirect(reverse("show_source", kwargs={"source_id": source_media.id}))
             else:
                 context = {
                     "source_media": source_media_form
                 }
 
-                return render(request, "", context)
+                return render(request, "media_manager/source/source_media_file_create.html", context)
     else:
         return redirect(reverse("auth_login"))
 
@@ -62,10 +62,10 @@ def show_source(request, source_id):
                 context = {
                     "source": source
                 }
-                return render(request, "", context)
+                return render(request, "media_manager/source/source_media_file_details.html", context)
             except SourceMediaFile.DoesNotExist:
 
-                return redirect("model_not_found_error")
+                return redirect(reverse("error_404"))
     else:
         return redirect(reverse("auth_login"))
 
@@ -76,7 +76,7 @@ def edit_and_update_source(request, source_id):
             try:
                 source_media = SourceMediaRepository.find_one(source_id)
             except SourceMediaFile.DoesNotExist:
-                return redirect("model_not_found_error")
+                return redirect(reverse("error_404"))
 
             if request.user.is_super_admin:
                 source_media_form = AdminUpdateSourceMediaForm(source_media.to_json)
@@ -87,7 +87,7 @@ def edit_and_update_source(request, source_id):
                 "source_media": source_media_form
             }
 
-            return render(request, "", context)
+            return render(request, "media_manager/source/source_media_file_edit.html", context)
 
         elif request.method == "POST":
 
@@ -115,7 +115,7 @@ def edit_and_update_source(request, source_id):
                     "source_media": source_media_form
                 }
 
-                return render(request, "", context)
+                return render(request, "media_manager/source/source_media_file_edit.html", context)
     else:
         return redirect(reverse("auth_login"))
 
@@ -131,13 +131,13 @@ def list_source(request):
                 context = {
                     "source_media": source_media_links
                 }
-                return render(request, "", context)
+                return render(request, "media_manager/source/source_media_file_list.html", context)
             else:
                 source_media_links = SourceMediaRepository.find_all()
                 context = {
                     "source_media": source_media_links
                 }
-                return render(request, "", context)
+                return render(request, "media_manager/source/source_media_file_list.html", context)
         else:
             return redirect(reverse("auth_login"))
 

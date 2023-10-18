@@ -21,6 +21,13 @@ class Country(models.Model):
     )
     name = models.CharField(max_length=50, unique=True, null=False, blank=False)
 
+    @property
+    def to_json(self):
+        return {
+            "continent": self.continent,
+            "name": self.name
+        }
+
 
 class Organisations(models.Model):
     # id = models.BigAutoField()
@@ -29,6 +36,16 @@ class Organisations(models.Model):
     address = models.CharField(max_length=150)
     cover = models.ImageField(upload_to="uploads/organisations", null=True, blank=True)
     email = models.EmailField(unique=True)
+
+    @property
+    def to_json(self):
+        return {
+            "name": self.name,
+            "country": self.country.id,
+            "address": self.address,
+            "cover": self.cover,
+            "email": self.email
+        }
 
 
 class User(AbstractBaseUser):
@@ -66,7 +83,7 @@ class User(AbstractBaseUser):
             "email": self.email,
             "password": self.password,
             "avatar": self.avatar,
-            "organisation":self.organisation.id,
-            "is_active" : self.is_active,
-            "account_type":self.account_type
+            "organisation": self.organisation.id,
+            "is_active": self.is_active,
+            "account_type": self.account_type
         }

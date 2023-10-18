@@ -49,4 +49,4 @@ def authentication(request):
 @login_required()
 def sign_out(request):
     logout(request)
-    return redirect(reverse("login"))
+    return redirect(reverse("auth_login"))

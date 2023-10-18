@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.shortcuts import render
+from django.shortcuts import render,redirect, reverse
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -24,12 +24,15 @@ from django.http import HttpResponse
 
 
 def main_dashboard(request):
-    return render(request,"pages/dashboard.html")
+    if request.user.is_authenticated :
+        return render(request,"pages/dashboard.html")
+    else:
+        return redirect(reverse("auth_login"))
 
 
 urlpatterns = [
                   path('auth/', include("authentication.urls")),
-                  path("centimedia/", include("media_manager.urls")),
+                  path('centimedia/', include("media_manager.urls")),
                   path('centimedia/', include("organisations.urls")),
                   path('admin/', admin.site.urls),
                   path('centimedia', main_dashboard, name="dashboard")

@@ -42,13 +42,13 @@ class MediaFileRepository:
     @classmethod
     def approve_uploaded_file(cls, media_id):
         media = cls.find_one(media_id)
-        media.source_type= "accepter"
+        media.status= "accepter"
         return media.save()
 
     @classmethod
     def reject_uploaded_file(cls, media_id):
         media = cls.find_one(media_id)
-        media.source_type = "accepter"
+        media.status = "rejecter"
         return media.save()
 
     @classmethod
@@ -60,3 +60,17 @@ class MediaFileRepository:
     @classmethod
     def find_by_organisation_id(cls, organisation_id):
         return cls.find_all().filter(organisation = organisation_id)
+
+    @classmethod
+    def find_all_audio(cls, organisation_id=None):
+        if organisation_id is not None:
+            return cls.find_all().filter(media_type="audio")
+        else:
+            return cls.find_all().filter(media_type="audio").filter(organisation_id=organisation_id)
+
+    @classmethod
+    def find_all_video(cls, organisation_id=None):
+        if organisation_id is not None:
+            return cls.find_all().filter(media_type="video")
+        else:
+            return cls.find_all().filter(media_type="video").filter(organisation_id=organisation_id)
